@@ -1,4 +1,5 @@
-import { createSlice } from '@reduxjs/toolkit';
+// src/shoppingList/ShoppingListSlice.ts
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 
 export interface ShoppingList {
@@ -12,10 +13,35 @@ export interface ShoppingList {
 
 export interface ShoppingListState {
   shoppingLists: ShoppingList[];
+  loading: boolean;
+  error: string | null;
 }
+
+// Async thunk to fetch shopping lists from an API
+export const fetchShoppingLists = createAsyncThunk<
+  ShoppingList[],
+  void,
+  { rejectValue: string }
+>(
+  'shoppingList/fetchShoppingLists',
+  async (_, thunkAPI) => {
+    try {
+      const response = await fetch('/api/shopping-lists'); // <-- Replace with your actual API endpoint
+      if (!response.ok) {
+        return thunkAPI.rejectWithValue('Failed to fetch shopping lists');
+      }
+      const data: ShoppingList[] = await response.json();
+      return data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue('Network error');
+    }
+  }
+);
 
 const initialState: ShoppingListState = {
   shoppingLists: [],
+  loading: false,
+  error: null,
 };
 
 const shoppingListSlice = createSlice({
@@ -42,7 +68,28 @@ const shoppingListSlice = createSlice({
       );
     },
   },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchShoppingLists.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchShoppingLists.fulfilled, (state, action) => {
+        state.loading = false;
+        state.shoppingLists = action.payload;
+      })
+      .addCase(fetchShoppingLists.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload ?? 'Failed to fetch shopping lists';
+      });
+  },
 });
 
-export const { setShoppingLists, addShoppingList, updateShoppingList, deleteShoppingList } = shoppingListSlice.actions;
+export const {
+  setShoppingLists,
+  addShoppingList,
+  updateShoppingList,
+  deleteShoppingList,
+} = shoppingListSlice.actions;
+
 export default shoppingListSlice.reducer;
