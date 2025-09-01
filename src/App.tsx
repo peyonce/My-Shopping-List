@@ -1,26 +1,27 @@
-// src/App.tsx
 import React, { useEffect } from 'react';
 import { Routes, Route, BrowserRouter as Router } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setUser } from './features/useAuth';
 import { fetchShoppingLists } from './shoppingList/ShoppingListSlice';
-import { apiService } from './api/apiService';
 import LoginPage from './pages/login';
-import ShoppingListPage from './shoppingList/ShoppingListSlice';
+import ShoppingList from './shoppingList/ShoppingList';
 import ProtectedRoute from './components/ProtectedRoute';
+import type { AppDispatch } from './store/store';
+
 
 const App: React.FC = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
+
+  const getUserFromLocalStorage = () => {
+    const userData = localStorage.getItem('user');
+    return userData ? JSON.parse(userData) : null;
+  }
 
   useEffect(() => {
+    const user = getUserFromLocalStorage();
 
-    const user = apiService.getUserFromLocalStorage();
     if (user) {
       dispatch(setUser(user));
-    }
-
-
-    if (user) {
       dispatch(fetchShoppingLists());
     }
   }, [dispatch]);
@@ -33,11 +34,10 @@ const App: React.FC = () => {
           path="/shopping-list"
           element={
             <ProtectedRoute>
-              <ShoppingListPage />
+              <ShoppingList />
             </ProtectedRoute>
           }
         />
-
       </Routes>
     </Router>
   );

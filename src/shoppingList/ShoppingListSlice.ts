@@ -1,4 +1,3 @@
-// src/shoppingList/ShoppingListSlice.ts
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 
@@ -17,7 +16,7 @@ export interface ShoppingListState {
   error: string | null;
 }
 
-// Async thunk to fetch shopping lists from an API
+
 export const fetchShoppingLists = createAsyncThunk<
   ShoppingList[],
   void,
@@ -26,7 +25,7 @@ export const fetchShoppingLists = createAsyncThunk<
   'shoppingList/fetchShoppingLists',
   async (_, thunkAPI) => {
     try {
-      const response = await fetch('/api/shopping-lists'); // <-- Replace with your actual API endpoint
+      const response = await fetch('/api/shopping-lists');
       if (!response.ok) {
         return thunkAPI.rejectWithValue('Failed to fetch shopping lists');
       }
